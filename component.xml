@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<!-- s3storage ZConfig section setup -->
+
+<component prefix="Products.s3storage.config">
+
+  <sectiontype name="s3storage" implements="ZODB.storage"
+      datatype=".S3StorageDatatype">
+    <key name="name" default="S3 Storage" />
+    <key name="aws_access_key_id" required="yes">
+      <description>
+        your aws access key id
+      </description>
+    </key>
+    <key name="aws_secret_access_key" required="yes">
+      <description>
+        your aws access secret access key
+      </description>
+    </key>
+    <key name="bucket_name" required="yes">
+      <description>
+        S3 bucket you want to use
+      </description>
+    </key>
+    <key name="memcache_servers" required="yes">
+      <description>
+        list of memcache servers you want to use
+	eg 127.0.0.1:12345
+      </description>
+    </key>
+  </sectiontype>
+
+<sectiontype name="s3_zodb" datatype=".S3ZODBDatabaseType"
+      implements="ZODB.database" extends="zodb" />
+
+</component>
