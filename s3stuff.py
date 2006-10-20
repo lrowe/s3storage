@@ -5,7 +5,10 @@ import boto
 from boto.key import Key
 from ZODB.utils import u64, p64, z64
 import time
+from boto.exception import S3ResponseError
 
+RETRIES = 5
+SLEEPTIME = 0.1
 DEBUG = True
 
 class S3Aspect:
@@ -63,18 +66,27 @@ class S3Aspect:
         k = Key(self._bucket)
         k.key = 'type:record,oid:%s,tid:%s' % (oid_repr(oid), tid_repr(tid))
         if DEBUG: print 'LOAD  %s' % k.key
+        for n in xrange(RETRIES):
+            try:
+                return k.get_contents_as_string()
+            except S3ResponseError:
+                if DEBUG: print 'RETRY %s' % n
+                time.sleep(SLEEPTIME)
         return k.get_contents_as_string()
+
         
     def storePickle(self, oid, tid, prev_tid, data):
         '''Save the data to s3'''
         k = Key(self._bucket)
         k.key = 'type:record,oid:%s,tid:%s' % (oid_repr(oid), tid_repr(tid))
         if DEBUG: print 'STORE %s' % k.key
-        try:
-            k.set_contents_from_string(data)
-        except:
-            time.sleep(0.1) # try again
-            k.set_contents_from_string(data)
+        for n in xrange(RETRIES):
+            try:
+                return k.set_contents_from_string(data)
+            except:
+                if DEBUG: print 'RETRY %s' % n                
+                time.sleep(SLEEPTIME)
+        return k.set_contents_from_string(data)
             
     def findLastCommit(self, oid, serial):
         '''
