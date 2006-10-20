@@ -6,6 +6,7 @@ from boto.key import Key
 from ZODB.utils import u64, p64, z64
 import time
 from boto.exception import S3ResponseError
+from boto.bucket import Bucket
 
 RETRIES = 5
 SLEEPTIME = 0.1
@@ -16,7 +17,7 @@ class S3Aspect:
     '''
     def __init__(self, aws_access_key_id, aws_secret_access_key, bucket_name):
         conn = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
-        self._bucket = conn.create_bucket(bucket_name)
+        self._bucket = Bucket(conn, bucket_name)
 
     def lastCommit(self):
         '''
