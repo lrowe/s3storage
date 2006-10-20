@@ -1,10 +1,47 @@
 s3storage - zope in the cloud
+=============================
 
-s3storage is an interesting experiment. Amazon's S3 storage service provides an
-eventual consistancy guarentee, but propogation delays mean that one must be
-careful when trying to cram transactional semantics on top of the model. That
-said, it has the potential (along with the elastic compute cloud) to provide
-a massively scalable object system.
+Setup
+-----
+
+boto from http://code.google.com/p/boto
+
+memcached bindings http://cheeseshop.python.org/pypi/memcached/
+
+start a memcached server with the -M option so it won't garbage collect your
+locks.. 
+
+Put this in your zope.conf
+
+%import Products.s3storage
+<zodb_db main>
+    # Main S3Storage database
+    mount-point /
+    connection-class Products.s3storage.connection.StoragePerConnection
+    <s3storage>
+      aws_access_key_id 12345ABC...
+      aws_secret_access_key abc123.....
+      bucket_name mys3bucket
+      memcache_servers 127.0.0.1:12345
+    </s3storage>
+</zodb_db>
+
+
+Current Status
+--------------
+Dog slow ;-)
+Far too many writes to s3. Will be interesting to see what performance you
+get from ec2 when they have some more beta keys
+
+
+Design ideas - not completely current!
+------------
+
+s3storage is an experiment. Amazon's S3 storage service provides an eventual 
+consistancy guarentee, but propogation delays mean that one must be careful 
+when trying to cram transactional semantics on top of the model. That said, it
+has the potential (along with the elastic compute cloud) to provide a massively
+scalable object system.
 
 Benefits of S3:
 
@@ -181,7 +218,7 @@ to find out
   * The record for an oid currently or at a particular transaction
     loadBefore, load
 
-  this should be implemented as a list operation. So we write a 1 byte file
+  this should be implemented as a list operation. So we write a 0 byte file
 
     type:index_commit,oid:<oid repr>,serial:<serial repr>,prev:<prev serial repr>,tid:<tid repr>,ltid:<ltid repr>
 
@@ -192,9 +229,3 @@ to find out
 So this means that sequence must be reverse alphabetically sorted
   
 These are starting to look very like rdf data structures
-
-References
-==========
-
- * http://www.zope.org/Wikis/DevSite/Proposals/DirectoryTreeStorage
-
